@@ -1,0 +1,964 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="ad.size" content="width=750,height=1344">
+  <title>Deposeguro Programatica</title>
+  <script>
+    window.clickTag = window.clickTag || "https://deposeguro.com/";
+  </script>
+  <style>
+    :root {
+      --safe-top: 56px;
+      --safe-bottom: 56px;
+      --cta-bottom: 120px;
+      --white: #fff;
+      --shadow: rgba(0, 15, 38, .55);
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: #001333;
+      font-family: "Titillium Web", "Arial Narrow", Arial, sans-serif;
+    }
+
+    body {
+      display: grid;
+      place-items: center;
+    }
+
+    button {
+      padding: 0;
+      border: 0;
+      background: transparent;
+      cursor: pointer;
+      font: inherit;
+    }
+
+    #ad {
+      position: relative;
+      width: min(100vw, calc(100vh * 750 / 1344), 750px);
+      aspect-ratio: 750 / 1344;
+      height: auto;
+      overflow: hidden;
+      background: #001333;
+      color: var(--white);
+      touch-action: none;
+      isolation: isolate;
+    }
+
+    .phase {
+      position: absolute;
+      inset: 0;
+      display: none;
+      overflow: hidden;
+    }
+
+    .phase.is-active {
+      display: block;
+    }
+
+    .fill-media,
+    .bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      object-position: center;
+    }
+
+    #startVideo {
+      cursor: pointer;
+    }
+
+    #experience {
+      background: #001333;
+    }
+
+    #stuffField {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 1px;
+      will-change: transform;
+      z-index: 3;
+    }
+
+    .stuff {
+      position: absolute;
+      width: clamp(46px, 17vw, 86px);
+      height: clamp(46px, 17vw, 86px);
+      object-fit: contain;
+      filter: drop-shadow(0 6px 10px rgba(0, 20, 40, .25));
+      transition: opacity .18s ease, transform .18s ease;
+      will-change: transform, opacity;
+    }
+
+    #stuffField.is-warming .stuff:not(.is-gone) {
+      animation: stuffWarmup 1.12s ease-in-out infinite alternate;
+      animation-delay: calc(var(--i, 0) * -90ms);
+    }
+
+    .stuff.is-hit {
+      transform: scale(.92);
+    }
+
+    .stuff.is-gone {
+      opacity: 0;
+      transform: scale(.35) rotate(18deg);
+      pointer-events: none;
+    }
+
+    #ship {
+      position: absolute;
+      left: 50%;
+      bottom: var(--safe-bottom);
+      width: clamp(86px, 30vw, 150px);
+      height: auto;
+      transform: translateX(-50%);
+      z-index: 5;
+      filter: drop-shadow(0 12px 18px rgba(0, 12, 38, .35));
+      will-change: transform;
+    }
+
+    #bulletPreview {
+      position: absolute;
+      left: 50%;
+      bottom: calc(var(--safe-bottom) + clamp(86px, 30vw, 150px) + 24px);
+      width: clamp(18px, 6vw, 34px);
+      height: auto;
+      transform: translateX(-50%);
+      z-index: 4;
+      opacity: .95;
+      filter: drop-shadow(0 6px 8px rgba(0, 20, 40, .32));
+    }
+
+    #experience.is-playing #bulletPreview {
+      display: none;
+    }
+
+    .bullet {
+      position: absolute;
+      width: clamp(18px, 6vw, 34px);
+      height: auto;
+      z-index: 4;
+      pointer-events: none;
+      will-change: transform;
+    }
+
+    #message {
+      position: absolute;
+      left: 50%;
+      top: 40%;
+      z-index: 7;
+      width: min(88%, 520px);
+      transform: translate(-50%, -50%);
+      color: var(--white);
+      text-align: center;
+      font-weight: 700;
+      font-size: clamp(15px, 4.4vw, 29px);
+      line-height: .98;
+      text-shadow: 0 5px 14px var(--shadow);
+      opacity: 0;
+      transition: opacity .25s ease, transform .25s ease;
+      pointer-events: none;
+    }
+
+    #message.is-visible {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    #message.is-count {
+      font-size: clamp(45px, 16.8vw, 98px);
+    }
+
+    #message.is-fire {
+      font-size: clamp(22px, 6.9vw, 42px);
+    }
+
+    #supportMessage {
+      position: absolute;
+      left: 50%;
+      top: 56px;
+      z-index: 8;
+      width: min(88%, 520px);
+      transform: translateX(-50%);
+      color: var(--white);
+      text-align: center;
+      font-weight: 700;
+      font-size: clamp(24px, 7vw, 52px);
+      line-height: 1;
+      text-shadow: 0 5px 14px var(--shadow);
+      opacity: 0;
+      transition: opacity .18s ease, transform .18s ease;
+      pointer-events: none;
+    }
+
+    #supportMessage.is-visible {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .result-copy {
+      position: absolute;
+      left: 50%;
+      top: 11%;
+      z-index: 8;
+      width: min(86%, 560px);
+      transform: translateX(-50%);
+      text-align: center;
+      color: var(--white);
+      text-shadow: 0 5px 16px var(--shadow);
+    }
+
+    .result-copy strong,
+    .result-copy span {
+      display: block;
+    }
+
+    .result-copy strong {
+      font-size: clamp(34px, 11vw, 72px);
+      font-weight: 700;
+      line-height: .95;
+    }
+
+    .result-copy span {
+      margin-top: 8px;
+      font-size: clamp(23px, 7vw, 42px);
+      font-weight: 500;
+      line-height: 1.05;
+    }
+
+    #loseScreen .result-copy,
+    #winScreen .result-copy {
+      top: 8%;
+    }
+
+    #winScreen .result-copy {
+      top: 23%;
+    }
+
+    #loseScreen .result-copy strong,
+    #winScreen .result-copy strong {
+      font-size: clamp(19px, 6.1vw, 40px);
+      line-height: 1;
+    }
+
+    #loseScreen .result-copy span,
+    #winScreen .result-copy span {
+      margin-top: 5px;
+      font-size: clamp(13px, 3.9vw, 23px);
+      line-height: 1.08;
+    }
+
+    #loseScreen,
+    #winScreen {
+      position: absolute;
+      inset: 0;
+      display: none;
+      z-index: 10;
+      overflow: hidden;
+    }
+
+    #loseScreen.is-visible,
+    #winScreen.is-visible {
+      display: block;
+    }
+
+    #tryAgain {
+      position: absolute;
+      left: 50%;
+      top: 22%;
+      z-index: 12;
+      width: min(41%, 161px);
+      transform: translateX(-50%);
+    }
+
+    #tryAgain img,
+    #ctaButton img,
+    #ctaTitle {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    #lostShip {
+      position: absolute;
+      left: 50%;
+      bottom: 19%;
+      z-index: 11;
+      width: min(60%, 260px);
+      height: auto;
+      transform: translateX(-50%);
+      animation: lostShipFloat 1.45s ease-in-out infinite alternate;
+    }
+
+    #lostStuff {
+      position: absolute;
+      left: 50%;
+      bottom: 0;
+      z-index: 10;
+      width: min(100%, 560px);
+      height: auto;
+      transform: translateX(-50%);
+    }
+
+    #winShip {
+      position: absolute;
+      left: 50%;
+      bottom: 25%;
+      z-index: 11;
+      width: min(58%, 256px);
+      height: auto;
+      transform: translateX(-50%);
+      filter: drop-shadow(0 16px 24px rgba(0, 10, 28, .28));
+      animation: winShipFloat 1.65s ease-in-out infinite alternate;
+    }
+
+    #cta .parallax {
+      position: absolute;
+      inset: 0;
+    }
+
+    #ctaTitle {
+      position: absolute;
+      left: 50%;
+      top: 11%;
+      z-index: 3;
+      width: min(82%, 360px);
+      transform: translateX(-50%);
+    }
+
+    #ctaButton {
+      position: absolute;
+      left: 50%;
+      bottom: var(--cta-bottom);
+      z-index: 4;
+      width: min(58%, 230px);
+      transform: translateX(-50%);
+    }
+
+    @keyframes stuffWarmup {
+      0% {
+        transform: translate(-3px, -2px) rotate(-2deg);
+      }
+
+      50% {
+        transform: translate(2px, 3px) rotate(1deg);
+      }
+
+      100% {
+        transform: translate(4px, -1px) rotate(2deg);
+      }
+    }
+
+    @keyframes winShipFloat {
+      0% {
+        transform: translateX(-50%) translateY(0) rotate(-1deg);
+      }
+
+      100% {
+        transform: translateX(-50%) translateY(-10px) rotate(1deg);
+      }
+    }
+
+    @keyframes lostShipFloat {
+      0% {
+        transform: translateX(-50%) translateY(0) rotate(1deg);
+      }
+
+      100% {
+        transform: translateX(-50%) translateY(-8px) rotate(-1deg);
+      }
+    }
+
+    @media (max-height: 520px) {
+      :root {
+        --safe-top: 28px;
+        --safe-bottom: 24px;
+        --cta-bottom: 54px;
+      }
+
+      .result-copy {
+        top: 7%;
+      }
+
+      #tryAgain {
+        top: 24%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main id="ad" aria-label="Deposeguro">
+    <section id="start" class="phase is-active" aria-label="Inicio">
+      <video id="startVideo" class="fill-media" src="video_start.mp4" autoplay muted loop playsinline preload="auto"></video>
+    </section>
+
+    <section id="experience" class="phase" aria-label="Experiencia">
+      <img class="bg" src="background_experience.webp" alt="">
+      <div id="stuffField" aria-hidden="true"></div>
+      <img id="bulletPreview" src="bullets.webp" alt="">
+      <img id="ship" src="spaceship.webp" alt="">
+      <div id="message" aria-live="polite"></div>
+      <div id="supportMessage" aria-live="polite"></div>
+
+      <div id="loseScreen" aria-hidden="true">
+        <div class="result-copy">
+          <strong>¡Cuidado!</strong>
+          <span>El caos invadió tu espacio</span>
+        </div>
+        <button id="tryAgain" type="button" aria-label="Intentar de nuevo">
+          <img src="button_try_again.png" alt="">
+        </button>
+        <img id="lostShip" src="spaceship_lost.webp" alt="">
+        <img id="lostStuff" src="stuff_lost.png" alt="">
+      </div>
+
+      <div id="winScreen" aria-hidden="true">
+        <img class="bg" src="background_win.png" alt="">
+        <div class="result-copy">
+          <strong>¡Misión cumplida!</strong>
+          <span>Tu casa esta impecable</span>
+        </div>
+        <img id="winShip" src="spaceship_win.webp" alt="">
+      </div>
+    </section>
+
+    <section id="cta" class="phase" aria-label="Cierre">
+      <div class="parallax">
+        <img class="bg" src="background_cta.webp" alt="">
+      </div>
+      <img id="ctaTitle" src="title_cta.webp" alt="Deposeguro">
+      <button id="ctaButton" type="button" aria-label="Ir a Deposeguro">
+        <img src="button_cta.webp" alt="">
+      </button>
+    </section>
+
+    <audio id="experienceAudio" src="background_sound_experience.mp3" preload="auto" loop></audio>
+    <audio id="lostAudio" src="lost_sound.mp3" preload="auto"></audio>
+    <audio id="clapsAudio" src="claps_sound.mp3" preload="auto"></audio>
+    <audio id="wowAudio" src="wow_sound.mp3" preload="auto"></audio>
+  </main>
+
+  <script>
+    (function () {
+      "use strict";
+
+      var EXIT_URL = "https://deposeguro.com/";
+      var GAME_DURATION = 15000;
+      var HIT_POINTS = 6;
+      var BULLET_INTERVAL = 220;
+      var BULLET_SPEED = 760;
+      var STUFF_FILES = [
+        "stuff_1.webp",
+        "stuff_2.webp",
+        "stuff_3.webp",
+        "stuff_4.webp",
+        "stuff_5.webp",
+        "stuff_6.webp",
+        "stuff_7.webp",
+        "stuff_8.webp"
+      ];
+
+      var ad = document.getElementById("ad");
+      var start = document.getElementById("start");
+      var experience = document.getElementById("experience");
+      var cta = document.getElementById("cta");
+      var startVideo = document.getElementById("startVideo");
+      var stuffField = document.getElementById("stuffField");
+      var ship = document.getElementById("ship");
+      var bulletPreview = document.getElementById("bulletPreview");
+      var message = document.getElementById("message");
+      var supportMessage = document.getElementById("supportMessage");
+      var loseScreen = document.getElementById("loseScreen");
+      var winScreen = document.getElementById("winScreen");
+      var tryAgain = document.getElementById("tryAgain");
+      var ctaButton = document.getElementById("ctaButton");
+      var experienceAudio = document.getElementById("experienceAudio");
+      var lostAudio = document.getElementById("lostAudio");
+      var clapsAudio = document.getElementById("clapsAudio");
+      var wowAudio = document.getElementById("wowAudio");
+
+      var stuff = [];
+      var bullets = [];
+      var shipX = 0.5;
+      var started = false;
+      var gameActive = false;
+      var destroyedStuff = 0;
+      var wowShown = false;
+      var dontGiveUpShown = false;
+      var lastTime = 0;
+      var lastShot = 0;
+      var gameStartTime = 0;
+      var rafId = 0;
+      var winFallbackTimer = 0;
+      var supportTimer = 0;
+      var sequenceTimers = [];
+
+      function showPhase(node) {
+        [start, experience, cta].forEach(function (phase) {
+          phase.classList.toggle("is-active", phase === node);
+        });
+      }
+
+      function playSound(audio, loop) {
+        audio.pause();
+        audio.currentTime = 0;
+        audio.loop = !!loop;
+        var promise = audio.play();
+        if (promise && promise.catch) {
+          promise.catch(function () {});
+        }
+      }
+
+      function primeSound(audio) {
+        audio.load();
+        audio.currentTime = 0;
+      }
+
+      function playWowSound() {
+        wowAudio.pause();
+        wowAudio.currentTime = 0;
+        wowAudio.loop = false;
+        var promise = wowAudio.play();
+        if (promise && promise.catch) {
+          promise.catch(function () {});
+        }
+      }
+
+      function stopSound(audio) {
+        audio.pause();
+        audio.currentTime = 0;
+      }
+
+      function stopAllAudio() {
+        stopSound(experienceAudio);
+        stopSound(lostAudio);
+        stopSound(clapsAudio);
+        stopSound(wowAudio);
+      }
+
+      function clearSequence() {
+        sequenceTimers.forEach(window.clearTimeout);
+        sequenceTimers = [];
+        window.clearTimeout(winFallbackTimer);
+      }
+
+      function schedule(delay, callback) {
+        sequenceTimers.push(window.setTimeout(callback, delay));
+      }
+
+      function setMessage(text, mode) {
+        message.textContent = text;
+        message.className = "is-visible" + (mode ? " " + mode : "");
+      }
+
+      function hideMessage() {
+        message.textContent = "";
+        message.className = "";
+      }
+
+      function showSupportMessage(text) {
+        window.clearTimeout(supportTimer);
+        supportMessage.textContent = text;
+        supportMessage.className = "is-visible";
+
+        supportTimer = window.setTimeout(function () {
+          supportMessage.textContent = "";
+          supportMessage.className = "";
+        }, 1700);
+      }
+
+      function hideSupportMessage() {
+        window.clearTimeout(supportTimer);
+        supportMessage.textContent = "";
+        supportMessage.className = "";
+      }
+
+      function clamp(value, min, max) {
+        return Math.max(min, Math.min(max, value));
+      }
+
+      function setShipFromClientX(clientX) {
+        var rect = ad.getBoundingClientRect();
+        shipX = clamp((clientX - rect.left) / rect.width, 0.12, 0.88);
+        renderShip();
+      }
+
+      function renderShip() {
+        var rect = ad.getBoundingClientRect();
+        var shipRect = ship.getBoundingClientRect();
+        var x = shipX * rect.width;
+        ship.style.left = x + "px";
+        ship.style.transform = "translateX(-50%)";
+        bulletPreview.style.left = x + "px";
+        bulletPreview.style.transform = "translateX(-50%)";
+        ship.dataset.centerX = String(x);
+        ship.dataset.top = String(rect.height - parseFloat(getComputedStyle(ship).bottom) - shipRect.height);
+      }
+
+      function layoutStuff() {
+        var rect = ad.getBoundingClientRect();
+        var top = Math.max(28, Math.min(56, rect.height * 0.09));
+        var item = clamp(rect.width * 0.17, 46, 86);
+        var colGap = (rect.width - item * 4) / 5;
+        var rowGap = Math.max(10, item * 0.28);
+        var startY = top;
+
+        stuff.forEach(function (target, index) {
+          var col = index % 4;
+          var row = Math.floor(index / 4);
+          target.baseX = colGap + col * (item + colGap);
+          target.baseY = startY + row * (item + rowGap);
+          target.size = item;
+          target.el.style.width = item + "px";
+          target.el.style.height = item + "px";
+          target.el.style.left = target.baseX + "px";
+          target.el.style.top = target.baseY + "px";
+        });
+
+        stuffField.dataset.gridHeight = String(top + item * 2 + rowGap);
+      }
+
+      function buildStuff() {
+        stuffField.textContent = "";
+        stuff = STUFF_FILES.map(function (src, index) {
+          var img = document.createElement("img");
+          img.className = "stuff";
+          img.src = src;
+          img.alt = "";
+          img.decoding = "async";
+          img.style.setProperty("--i", String(index));
+          stuffField.appendChild(img);
+          return {
+            el: img,
+            hp: HIT_POINTS,
+            gone: false,
+            index: index,
+            baseX: 0,
+            baseY: 0,
+            size: 0
+          };
+        });
+        layoutStuff();
+      }
+
+      function resetBullets() {
+        bullets.forEach(function (bullet) {
+          bullet.el.remove();
+        });
+        bullets = [];
+      }
+
+      function spawnBullet(now) {
+        var rect = ad.getBoundingClientRect();
+        var shipRect = ship.getBoundingClientRect();
+        var bullet = document.createElement("img");
+        var width = clamp(rect.width * 0.06, 18, 34);
+        var shipCenterX = shipRect.left - rect.left + shipRect.width / 2;
+        var x = shipCenterX - width / 2;
+        var y = shipRect.top - rect.top - 22;
+
+        bullet.className = "bullet";
+        bullet.src = "bullets.webp";
+        bullet.alt = "";
+        bullet.style.width = width + "px";
+        bullet.style.left = x + "px";
+        bullet.style.top = y + "px";
+        experience.appendChild(bullet);
+
+        bullets.push({
+          el: bullet,
+          x: x,
+          y: y,
+          width: width,
+          height: width * 1.7,
+          born: now
+        });
+      }
+
+      function rectsOverlap(a, b) {
+        return a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+      }
+
+      function hitStuff(target) {
+        target.hp -= 1;
+        target.el.classList.add("is-hit");
+        window.setTimeout(function () {
+          target.el.classList.remove("is-hit");
+        }, 80);
+
+        if (target.hp <= 0) {
+          target.gone = true;
+          target.el.classList.add("is-gone");
+          destroyedStuff += 1;
+
+          if (!wowShown && destroyedStuff >= 4) {
+            wowShown = true;
+            showSupportMessage("¡WOW!");
+            playWowSound();
+          }
+
+          if (!dontGiveUpShown && stuff.length - destroyedStuff === 2) {
+            dontGiveUpShown = true;
+            showSupportMessage("¡No te rindas!");
+          }
+        }
+      }
+
+      function updateGame(now) {
+        if (!gameActive) {
+          return;
+        }
+
+        var rect = ad.getBoundingClientRect();
+        var delta = lastTime ? (now - lastTime) / 1000 : 0;
+        var elapsed = now - gameStartTime;
+        var progress = clamp(elapsed / GAME_DURATION, 0, 1);
+        var gridHeight = parseFloat(stuffField.dataset.gridHeight || "180");
+        var maxDrop = Math.max(0, rect.height - gridHeight - 118);
+        var drop = maxDrop * progress;
+
+        lastTime = now;
+        stuffField.style.transform = "translateY(" + drop + "px)";
+
+        if (now - lastShot >= BULLET_INTERVAL) {
+          spawnBullet(now);
+          lastShot = now;
+        }
+
+        bullets = bullets.filter(function (bullet) {
+          bullet.y -= BULLET_SPEED * delta;
+          bullet.el.style.top = bullet.y + "px";
+
+          var bulletBox = {
+            left: bullet.x,
+            right: bullet.x + bullet.width,
+            top: bullet.y,
+            bottom: bullet.y + bullet.height
+          };
+
+          for (var i = 0; i < stuff.length; i += 1) {
+            var target = stuff[i];
+            if (target.gone) {
+              continue;
+            }
+
+            var targetBox = {
+              left: target.baseX,
+              right: target.baseX + target.size,
+              top: target.baseY + drop,
+              bottom: target.baseY + drop + target.size
+            };
+
+            if (rectsOverlap(bulletBox, targetBox)) {
+              hitStuff(target);
+              bullet.el.remove();
+              return false;
+            }
+          }
+
+          if (bullet.y < -60) {
+            bullet.el.remove();
+            return false;
+          }
+
+          return true;
+        });
+
+        if (stuff.every(function (target) { return target.gone; })) {
+          finishWin();
+          return;
+        }
+
+        if (elapsed >= GAME_DURATION) {
+          finishLose();
+          return;
+        }
+
+        rafId = window.requestAnimationFrame(updateGame);
+      }
+
+      function beginGame() {
+        hideMessage();
+        hideSupportMessage();
+        primeSound(wowAudio);
+        stuffField.classList.remove("is-warming");
+        experience.classList.add("is-playing");
+        gameActive = true;
+        lastTime = 0;
+        lastShot = 0;
+        gameStartTime = performance.now();
+        rafId = window.requestAnimationFrame(updateGame);
+      }
+
+      function startSequence() {
+        clearSequence();
+        experience.classList.remove("is-playing");
+        stuffField.classList.add("is-warming");
+        setMessage("¡Desliza y dispara el desorden!");
+        schedule(3000, function () {
+          setMessage("¿Listo?");
+        });
+        schedule(6000, function () {
+          setMessage("3", "is-count");
+        });
+        schedule(7000, function () {
+          setMessage("2", "is-count");
+        });
+        schedule(8000, function () {
+          setMessage("1", "is-count");
+        });
+        schedule(9000, function () {
+          setMessage("¡Dispara!", "is-fire");
+        });
+        schedule(10000, beginGame);
+      }
+
+      function resetExperience() {
+        window.cancelAnimationFrame(rafId);
+        clearSequence();
+        resetBullets();
+        hideMessage();
+        hideSupportMessage();
+        gameActive = false;
+        started = false;
+        destroyedStuff = 0;
+        wowShown = false;
+        dontGiveUpShown = false;
+        shipX = 0.5;
+        stuffField.style.transform = "translateY(0)";
+        stuffField.classList.remove("is-warming");
+        experience.classList.remove("is-playing");
+        loseScreen.classList.remove("is-visible");
+        winScreen.classList.remove("is-visible");
+        loseScreen.setAttribute("aria-hidden", "true");
+        winScreen.setAttribute("aria-hidden", "true");
+        stopAllAudio();
+        buildStuff();
+        renderShip();
+      }
+
+      function startExperience() {
+        if (started) {
+          return;
+        }
+
+        started = true;
+        showPhase(experience);
+        resetExperience();
+        started = true;
+        playSound(experienceAudio, true);
+        startSequence();
+      }
+
+      function finishLose() {
+        gameActive = false;
+        window.cancelAnimationFrame(rafId);
+        clearSequence();
+        resetBullets();
+        hideMessage();
+        hideSupportMessage();
+        stopSound(experienceAudio);
+        playSound(lostAudio, false);
+        loseScreen.classList.add("is-visible");
+        loseScreen.setAttribute("aria-hidden", "false");
+      }
+
+      function finishWin() {
+        gameActive = false;
+        window.cancelAnimationFrame(rafId);
+        clearSequence();
+        resetBullets();
+        hideMessage();
+        hideSupportMessage();
+        stopSound(experienceAudio);
+        winScreen.classList.add("is-visible");
+        winScreen.setAttribute("aria-hidden", "false");
+        playSound(clapsAudio, false);
+        winFallbackTimer = window.setTimeout(showCta, 4200);
+      }
+
+      function openExit() {
+        var url = window.clickTag || EXIT_URL;
+        window.open(url, "_blank");
+      }
+
+      function showCta() {
+        window.clearTimeout(winFallbackTimer);
+        showPhase(cta);
+        stopSound(clapsAudio);
+      }
+
+      startVideo.addEventListener("click", startExperience);
+      start.addEventListener("click", startExperience);
+
+      tryAgain.addEventListener("click", function (event) {
+        event.stopPropagation();
+        resetExperience();
+        started = true;
+        playSound(experienceAudio, true);
+        startSequence();
+      });
+
+      ctaButton.addEventListener("click", function (event) {
+        event.stopPropagation();
+        openExit();
+      });
+
+      clapsAudio.addEventListener("ended", function () {
+        showCta();
+      });
+
+      ad.addEventListener("pointerdown", function (event) {
+        if (experience.classList.contains("is-active") && !loseScreen.classList.contains("is-visible")) {
+          setShipFromClientX(event.clientX);
+        }
+      });
+
+      ad.addEventListener("pointermove", function (event) {
+        if (gameActive) {
+          setShipFromClientX(event.clientX);
+        }
+      });
+
+      window.addEventListener("resize", function () {
+        layoutStuff();
+        renderShip();
+      });
+
+      document.addEventListener("visibilitychange", function () {
+        if (document.hidden) {
+          startVideo.pause();
+          stopAllAudio();
+        } else if (start.classList.contains("is-active")) {
+          var promise = startVideo.play();
+          if (promise && promise.catch) {
+            promise.catch(function () {});
+          }
+        } else if (gameActive) {
+          playSound(experienceAudio, true);
+        }
+      });
+
+      buildStuff();
+      renderShip();
+    }());
+  </script>
+</body>
+</html>
